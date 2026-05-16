@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG-CDA | Consulta de Vehículo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 500px;
+        }
+        .card-header {
+            background-color: #1F5C99;
+            color: white;
+            text-align: center;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 24px;
+        }
+        .btn-primary {
+            background-color: #1F5C99;
+            border: none;
+            width: 100%;
+            padding: 12px;
+        }
+        .btn-primary:hover { background-color: #174d82; }
+        .resultado { display: none; }
+        .badge-aprobado { background-color: #198754; }
+        .badge-rechazado { background-color: #dc3545; }
+        .alert { display: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-1">🚗 SIG-CDA</h4>
+            <small>Consulta el estado de tu vehículo</small>
+        </div>
+        <div class="card-body p-4">
+            <div class="alert alert-danger" id="error-msg"></div>
+            <div class="mb-3">
+                <label class="form-label">Placa del vehículo</label>
+                <input type="text" class="form-control" id="placa" placeholder="Ej: ABC123">
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Documento del propietario</label>
+                <input type="text" class="form-control" id="documento" placeholder="Ej: 12345678">
+            </div>
+            <button class="btn btn-primary mb-3" onclick="consultarVehiculo()">Consultar</button>
+            <div class="text-center">
+                <a href="/">← Volver al inicio</a>
+            </div>
+
+            <!-- Resultado -->
+            <div class="resultado mt-4" id="resultado">
+                <hr>
+                <h5 class="mb-3">Resultado de la revisión</h5>
+                <table class="table table-bordered">
+                    <tr><th>Placa</th><td id="res-placa"></td></tr>
+                    <tr><th>Tipo de revisión</th><td id="res-tipo"></td></tr>
+                    <tr><th>Fecha</th><td id="res-fecha"></td></tr>
+                    <tr><th>Técnico</th><td id="res-tecnico"></td></tr>
+                    <tr>
+                        <th>Resultado</th>
+                        <td><span class="badge" id="res-resultado"></span></td>
+                    </tr>
+                    <tr><th>Observaciones</th><td id="res-observaciones"></td></tr>
+                </table>
+                <h6 class="mt-3">Ítems de inspección</h6>
+                <table class="table table-sm table-bordered" id="tabla-items">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Ítem</th>
+                            <th>Resultado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function consultarVehiculo() {
+            const placa = document.getElementById('placa').value.trim();
+            const documento = document.getElementById('documento').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+            const resultado = document.getElementById('resultado');
+
+            errorMsg.style.display = 'none';
+            resultado.style.display = 'none';
+
+            if (!placa || !documento) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Por favor ingresa la placa y el documento';
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`/api/consulta?placa=${placa}&documento=${documento}`);
+                const datos = await respuesta.json();
+
+                if (datos.error) {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = datos.mensaje;
+                    return;
+                }
+
+                // Llenar datos
+                document.getElementById('res-placa').textContent = datos.placa;
+                document.getElementById('res-tipo').textContent = datos.tipo_revision;
+                document.getElementById('res-fecha').textContent = datos.fecha_revision;
+                document.getElementById('res-tecnico').textContent = datos.tecnico;
+                document.getElementById('res-observaciones').textContent = datos.observaciones || 'Sin observaciones';
+
+                const badge = document.getElementById('res-resultado');
+                badge.textContent = datos.resultado;
+                badge.className = 'badge ' + (datos.resultado === 'aprobado' ? 'badge-aprobado' : 'badge-rechazado');
+
+                // Llenar ítems
+                const tbody = document.getElementById('items-body');
+                tbody.innerHTML = '';
+                datos.items.forEach(item => {
+                    const color = item.resultado === 'aprobado' ? 'text-success' : 'text-danger';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.nombre_item}</td>
+                            <td class="${color}"><strong>${item.resultado}</strong></td>
+                            <td>${item.observacion || '-'}</td>
+                        </tr>`;
+                });
+
+                resultado.style.display = 'block';
+
+            } catch (error) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Error de conexión con el servidor';
+            }
+        }
+    </script>
+</body>
+</html>
