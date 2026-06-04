@@ -5,99 +5,161 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIG-CDA | Consulta de Vehículo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #f0f4f8;
+            background-color: #000000;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px 20px;
         }
+        .logo-box {
+            background-color: #e53935;
+            border-radius: 20px;
+            width: 80px; height: 80px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .logo-box i { font-size: 40px; color: white; }
+        .titulo { color: white; font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+        .subtitulo { color: #aaaaaa; font-size: 14px; margin-bottom: 32px; }
         .card {
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            width: 500px;
+            background: white; border-radius: 16px;
+            padding: 40px; width: 100%; max-width: 560px;
+            border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            margin-bottom: 24px;
         }
-        .card-header {
-            background-color: #1F5C99;
-            color: white;
-            text-align: center;
-            border-radius: 16px 16px 0 0 !important;
-            padding: 24px;
+        .card-title { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 4px; }
+        .card-subtitle { font-size: 13px; color: #888; margin-bottom: 24px; }
+        .form-label { font-weight: 600; font-size: 14px; color: #333; }
+        .input-group-text { background: white; border-right: none; color: #aaa; }
+        .form-control { border-left: none; box-shadow: none !important; }
+        .input-group { border-radius: 8px; overflow: hidden; }
+        .input-group:focus-within { outline: 2px solid #e53935; border-radius: 8px; }
+        .btn-consultar {
+            background-color: #e53935; color: white;
+            border: none; width: 100%; padding: 14px;
+            font-size: 16px; font-weight: 600; border-radius: 8px;
+            margin-top: 8px; transition: background 0.2s; cursor: pointer;
         }
-        .btn-primary {
-            background-color: #1F5C99;
-            border: none;
-            width: 100%;
-            padding: 12px;
+        .btn-consultar:hover { background-color: #c62828; }
+        .volver-link { text-align: center; margin-top: 16px; }
+        .volver-link a { color: #e53935; font-weight: 600; text-decoration: none; font-size: 14px; }
+        .alert-msg { display: none; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
+
+        /* Resultado */
+        .resultado-card {
+            background: white; border-radius: 16px;
+            padding: 32px; width: 100%; max-width: 560px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            display: none;
         }
-        .btn-primary:hover { background-color: #174d82; }
-        .resultado { display: none; }
-        .badge-aprobado { background-color: #198754; }
-        .badge-rechazado { background-color: #dc3545; }
-        .alert { display: none; }
+        .resultado-titulo { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 20px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .info-item label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px; }
+        .info-item span { font-size: 14px; font-weight: 600; color: #333; }
+        .resultado-badge {
+            display: inline-block; padding: 8px 20px; border-radius: 20px;
+            font-size: 14px; font-weight: 700;
+        }
+        .badge-aprobado { background-color: #e8f5e9; color: #28a745; border: 1px solid #c8e6c9; }
+        .badge-rechazado { background-color: #ffebee; color: #e53935; border: 1px solid #ffcdd2; }
+        .items-titulo { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 12px; margin-top: 24px; }
+        .item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid #f5f5f5;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-nombre { font-size: 14px; color: #333; text-transform: capitalize; }
+        .item-obs { font-size: 12px; color: #888; }
+        .item-resultado-ap { color: #28a745; font-weight: 600; font-size: 13px; }
+        .item-resultado-re { color: #e53935; font-weight: 600; font-size: 13px; }
+        .tecnico-info {
+            margin-top: 20px; padding: 12px 16px;
+            background: #f8f8f8; border-radius: 10px;
+            font-size: 13px; color: #555;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Logo -->
+    <div class="logo-box"><i class="bi bi-car-front-fill"></i></div>
+    <div class="titulo">SIG-CDA</div>
+    <div class="subtitulo">Consulta el estado de tu vehículo</div>
+
+    <!-- Formulario -->
     <div class="card">
-        <div class="card-header">
-            <h4 class="mb-1">🚗 SIG-CDA</h4>
-            <small>Consulta el estado de tu vehículo</small>
-        </div>
-        <div class="card-body p-4">
-            <div class="alert alert-danger" id="error-msg"></div>
-            <div class="mb-3">
-                <label class="form-label">Placa del vehículo</label>
+        <div class="card-title">Consultar Vehículo</div>
+        <div class="card-subtitle">Ingresa la placa y tu documento de identidad</div>
+
+        <div class="alert alert-danger alert-msg" id="error-msg"></div>
+
+        <div class="mb-3">
+            <label class="form-label">Placa del vehículo</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-car-front"></i></span>
                 <input type="text" class="form-control" id="placa" placeholder="Ej: ABC123">
             </div>
-            <div class="mb-4">
-                <label class="form-label">Documento del propietario</label>
+        </div>
+        <div class="mb-4">
+            <label class="form-label">Documento del propietario</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                 <input type="text" class="form-control" id="documento" placeholder="Ej: 12345678">
             </div>
-            <button class="btn btn-primary mb-3" onclick="consultarVehiculo()">Consultar</button>
-            <div class="text-center">
-                <a href="/">← Volver al inicio</a>
-            </div>
+        </div>
 
-            <!-- Resultado -->
-            <div class="resultado mt-4" id="resultado">
-                <hr>
-                <h5 class="mb-3">Resultado de la revisión</h5>
-                <table class="table table-bordered">
-                    <tr><th>Placa</th><td id="res-placa"></td></tr>
-                    <tr><th>Tipo de revisión</th><td id="res-tipo"></td></tr>
-                    <tr><th>Fecha</th><td id="res-fecha"></td></tr>
-                    <tr><th>Técnico</th><td id="res-tecnico"></td></tr>
-                    <tr>
-                        <th>Resultado</th>
-                        <td><span class="badge" id="res-resultado"></span></td>
-                    </tr>
-                    <tr><th>Observaciones</th><td id="res-observaciones"></td></tr>
-                </table>
-                <h6 class="mt-3">Ítems de inspección</h6>
-                <table class="table table-sm table-bordered" id="tabla-items">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Ítem</th>
-                            <th>Resultado</th>
-                            <th>Observación</th>
-                        </tr>
-                    </thead>
-                    <tbody id="items-body"></tbody>
-                </table>
+        <button class="btn-consultar" onclick="consultarVehiculo()">
+            <i class="bi bi-search me-2"></i>Consultar Estado
+        </button>
+
+        <div class="volver-link mt-3">
+            <a href="/">← Volver al inicio</a>
+        </div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="resultado-card" id="resultado-card">
+        <div class="resultado-titulo">Resultado de la Revisión</div>
+
+        <div class="info-grid">
+            <div class="info-item"><label>Placa</label><span id="res-placa"></span></div>
+            <div class="info-item"><label>Vehículo</label><span id="res-vehiculo"></span></div>
+            <div class="info-item"><label>Propietario</label><span id="res-propietario"></span></div>
+            <div class="info-item"><label>Fecha</label><span id="res-fecha"></span></div>
+            <div class="info-item"><label>Tipo</label><span id="res-tipo"></span></div>
+            <div class="info-item">
+                <label>Resultado</label>
+                <span id="res-resultado"></span>
             </div>
+        </div>
+
+        <div id="res-obs" style="font-size:13px;color:#888;margin-bottom:8px;"></div>
+
+        <div class="items-titulo">Ítems de Inspección</div>
+        <div id="lista-items"></div>
+
+        <div class="tecnico-info">
+            <i class="bi bi-person-check me-2"></i>
+            Revisión realizada por: <strong id="res-tecnico"></strong>
         </div>
     </div>
 
     <script>
         async function consultarVehiculo() {
-            const placa = document.getElementById('placa').value.trim();
+            const placa     = document.getElementById('placa').value.trim().toUpperCase();
             const documento = document.getElementById('documento').value.trim();
-            const errorMsg = document.getElementById('error-msg');
-            const resultado = document.getElementById('resultado');
+            const errorMsg  = document.getElementById('error-msg');
+            const resultadoCard = document.getElementById('resultado-card');
 
             errorMsg.style.display = 'none';
-            resultado.style.display = 'none';
+            resultadoCard.style.display = 'none';
 
             if (!placa || !documento) {
                 errorMsg.style.display = 'block';
@@ -106,8 +168,8 @@
             }
 
             try {
-                const respuesta = await fetch(`/api/consulta?placa=${placa}&documento=${documento}`);
-                const datos = await respuesta.json();
+                const res = await fetch(`/api/consulta?placa=${placa}&documento=${documento}`);
+                const datos = await res.json();
 
                 if (datos.error) {
                     errorMsg.style.display = 'block';
@@ -117,31 +179,37 @@
 
                 // Llenar datos
                 document.getElementById('res-placa').textContent = datos.placa;
+                document.getElementById('res-vehiculo').textContent = `${datos.marca || ''} ${datos.modelo || ''} ${datos.anio ? '(' + datos.anio + ')' : ''}`;
+                document.getElementById('res-propietario').textContent = datos.nombre_propietario;
+                document.getElementById('res-fecha').textContent = new Date(datos.fecha_revision).toLocaleDateString('es-CO');
                 document.getElementById('res-tipo').textContent = datos.tipo_revision;
-                document.getElementById('res-fecha').textContent = datos.fecha_revision;
                 document.getElementById('res-tecnico').textContent = datos.tecnico;
-                document.getElementById('res-observaciones').textContent = datos.observaciones || 'Sin observaciones';
 
-                const badge = document.getElementById('res-resultado');
-                badge.textContent = datos.resultado;
-                badge.className = 'badge ' + (datos.resultado === 'aprobado' ? 'badge-aprobado' : 'badge-rechazado');
+                if (datos.observaciones) {
+                    document.getElementById('res-obs').innerHTML = `<i class="bi bi-chat-left-text me-1"></i>${datos.observaciones}`;
+                }
 
-                // Llenar ítems
-                const tbody = document.getElementById('items-body');
-                tbody.innerHTML = '';
-                datos.items.forEach(item => {
-                    const color = item.resultado === 'aprobado' ? 'text-success' : 'text-danger';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${item.nombre_item}</td>
-                            <td class="${color}"><strong>${item.resultado}</strong></td>
-                            <td>${item.observacion || '-'}</td>
-                        </tr>`;
-                });
+                const badge = datos.resultado === 'aprobado'
+                    ? `<span class="resultado-badge badge-aprobado">✓ Aprobado</span>`
+                    : `<span class="resultado-badge badge-rechazado">✗ Rechazado</span>`;
+                document.getElementById('res-resultado').innerHTML = badge;
 
-                resultado.style.display = 'block';
+                // Ítems
+                document.getElementById('lista-items').innerHTML = datos.items.map(item => `
+                    <div class="item-row">
+                        <div>
+                            <div class="item-nombre">${item.nombre_item.replace('_', ' ')}</div>
+                            ${item.observacion ? `<div class="item-obs">${item.observacion}</div>` : ''}
+                        </div>
+                        <span class="${item.resultado === 'aprobado' ? 'item-resultado-ap' : 'item-resultado-re'}">
+                            ${item.resultado === 'aprobado' ? '✓ Aprobado' : '✗ Rechazado'}
+                        </span>
+                    </div>
+                `).join('');
 
-            } catch (error) {
+                resultadoCard.style.display = 'block';
+
+            } catch(e) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = 'Error de conexión con el servidor';
             }

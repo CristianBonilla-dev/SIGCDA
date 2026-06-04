@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG-CDA | Vehículos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #000000; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background-color: #111111; border-bottom: 1px solid #222; }
+        .navbar-brand span { color: #e53935; font-weight: 700; }
+        .sidebar {
+            background-color: #111111;
+            min-height: 100vh;
+            padding: 20px 0;
+            border-right: 1px solid #222;
+            position: fixed;
+            width: 220px;
+        }
+        .sidebar a {
+            display: block;
+            color: #aaa;
+            padding: 12px 24px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            color: white;
+            background-color: #1a1a1a;
+            border-left: 3px solid #e53935;
+        }
+        .sidebar a i { margin-right: 10px; }
+        .main-content {
+            margin-left: 220px;
+            padding: 30px;
+        }
+        .page-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .page-subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+        .card {
+            background-color: #111111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .card-header {
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #222;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 16px 20px;
+            color: white;
+            font-weight: 600;
+        }
+        .card-body { padding: 24px; }
+        .form-label { color: #ccc; font-size: 13px; font-weight: 600; }
+        .form-control, .form-select {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #1a1a1a;
+            border-color: #e53935;
+            color: white;
+            box-shadow: none;
+        }
+        .form-control::placeholder { color: #555; }
+        .form-select option { background-color: #1a1a1a; }
+        .btn-registrar {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-registrar:hover { background-color: #c62828; color: white; }
+        .btn-editar {
+            background-color: transparent;
+            border: 1px solid #e53935;
+            color: #e53935;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .btn-editar:hover { background-color: #e53935; color: white; }
+        .table { color: #ccc; }
+        .table thead th {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            font-weight: 600;
+        }
+        .table td { border-bottom: 1px solid #1a1a1a; vertical-align: middle; }
+        .badge-tipo {
+            background-color: #1a1a1a;
+            color: #aaa;
+            border: 1px solid #333;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .section-divider {
+            color: #e53935;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            margin-top: 8px;
+        }
+        .alert { display: none; border-radius: 8px; font-size: 14px; }
+        .modal-content {
+            background-color: #111111;
+            border: 1px solid #333;
+            color: white;
+        }
+        .modal-header { border-bottom: 1px solid #333; }
+        .modal-footer { border-top: 1px solid #333; }
+        .btn-close { filter: invert(1); }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="padding: 16px 24px; margin-bottom: 12px;">
+            <span style="color: #e53935; font-weight: 700; font-size: 18px;">🚗 SIG-CDA</span>
+        </div>
+        <a href="/admin/dashboard"><i class="bi bi-grid"></i> Dashboard</a>
+        <a href="/admin/usuarios"><i class="bi bi-people"></i> Usuarios</a>
+        <a href="/admin/vehiculos" class="active"><i class="bi bi-car-front"></i> Vehículos</a>
+        <a href="/admin/revisiones"><i class="bi bi-clipboard-check"></i> Revisiones</a>
+        <div style="position: absolute; bottom: 20px; width: 100%;">
+            <a href="#" onclick="cerrarSesion()"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="main-content">
+        <div class="page-title">Gestión de Vehículos</div>
+        <div class="page-subtitle">Registra y administra los vehículos del CDA</div>
+
+        <!-- Formulario registro -->
+        <div class="card">
+            <div class="card-header">Registrar nuevo vehículo</div>
+            <div class="card-body">
+                <div class="alert alert-danger" id="error-msg"></div>
+                <div class="alert alert-success" id="success-msg"></div>
+
+                <div class="section-divider">Información del vehículo</div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Placa *</label>
+                        <input type="text" class="form-control" id="placa" placeholder="Ej: ABC123">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo *</label>
+                        <select class="form-select" id="tipo_vehiculo">
+                            <option value="">Selecciona</option>
+                            <option value="carro">Carro</option>
+                            <option value="moto">Moto</option>
+                            <option value="camion">Camión</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Marca</label>
+                        <input type="text" class="form-control" id="marca" placeholder="Ej: Toyota">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" class="form-control" id="modelo" placeholder="Ej: Corolla">
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Año</label>
+                        <input type="number" class="form-control" id="anio" placeholder="Ej: 2020">
+                    </div>
+                </div>
+
+                <div class="section-divider">Información del propietario</div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre_propietario" placeholder="Nombre completo">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Documento *</label>
+                        <input type="text" class="form-control" id="documento_propietario" placeholder="Cédula o NIT">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono_propietario" placeholder="Ej: 3001234567">
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email_propietario" placeholder="email@ejemplo.com">
+                    </div>
+                </div>
+
+                <button class="btn-registrar" onclick="registrarVehiculo()">
+                    <i class="bi bi-plus-circle me-2"></i>Registrar Vehículo
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de vehículos -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Vehículos registrados</span>
+                <button class="btn-registrar btn-sm" onclick="cargarVehiculos()">
+                    <i class="bi bi-arrow-clockwise"></i> Actualizar
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Placa</th>
+                            <th>Tipo</th>
+                            <th>Marca / Modelo</th>
+                            <th>Propietario</th>
+                            <th>Documento</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-vehiculos">
+                        <tr><td colspan="7" class="text-center py-4" style="color:#555">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal editar -->
+    <div class="modal fade" id="modalEditar" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-id">
+                    <div class="section-divider">Información del vehículo</div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo *</label>
+                            <select class="form-select" id="edit-tipo">
+                                <option value="carro">Carro</option>
+                                <option value="moto">Moto</option>
+                                <option value="camion">Camión</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="edit-marca">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" class="form-control" id="edit-modelo">
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Año</label>
+                            <input type="number" class="form-control" id="edit-anio">
+                        </div>
+                    </div>
+                    <div class="section-divider">Información del propietario</div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="edit-nombre">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Documento *</label>
+                            <input type="text" class="form-control" id="edit-documento">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="edit-telefono">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit-email">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-registrar" onclick="guardarEdicion()">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        async function cargarVehiculos() {
+            const tbody = document.getElementById('tabla-vehiculos');
+            try {
+                const res = await fetch('/api/vehiculos', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const datos = await res.json();
+                if (!datos.vehiculos.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4" style="color:#555">No hay vehículos registrados</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = datos.vehiculos.map(v => `
+                    <tr>
+                        <td class="ps-4"><strong style="color:white">${v.placa}</strong></td>
+                        <td><span class="badge-tipo">${v.tipo_vehiculo}</span></td>
+                        <td style="color:white">${v.marca || '-'} ${v.modelo || ''} ${v.anio ? '(' + v.anio + ')' : ''}</td>
+                        <td>${v.nombre_propietario}</td>
+                        <td>${v.documento_propietario}</td>
+                        <td>${v.telefono_propietario || '-'}</td>
+                        <td>
+                            <button class="btn-editar" onclick="abrirEditar(${JSON.stringify(v).replace(/"/g, '&quot;')})">
+                                <i class="bi bi-pencil"></i> Editar
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error al cargar vehículos</td></tr>';
+            }
+        }
+
+        async function registrarVehiculo() {
+            const errorMsg = document.getElementById('error-msg');
+            const successMsg = document.getElementById('success-msg');
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            const datos = {
+                placa: document.getElementById('placa').value.trim().toUpperCase(),
+                tipo_vehiculo: document.getElementById('tipo_vehiculo').value,
+                marca: document.getElementById('marca').value.trim(),
+                modelo: document.getElementById('modelo').value.trim(),
+                anio: document.getElementById('anio').value || null,
+                nombre_propietario: document.getElementById('nombre_propietario').value.trim(),
+                documento_propietario: document.getElementById('documento_propietario').value.trim(),
+                telefono_propietario: document.getElementById('telefono_propietario').value.trim(),
+                email_propietario: document.getElementById('email_propietario').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/vehiculos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await res.json();
+                if (resultado.error) {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = resultado.mensaje;
+                    return;
+                }
+                successMsg.style.display = 'block';
+                successMsg.textContent = 'Vehículo registrado correctamente';
+                document.querySelectorAll('.form-control, .form-select').forEach(el => el.value = '');
+                cargarVehiculos();
+            } catch (e) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Error de conexión con el servidor';
+            }
+        }
+
+        function abrirEditar(v) {
+            document.getElementById('edit-id').value = v.id_vehiculo;
+            document.getElementById('edit-tipo').value = v.tipo_vehiculo;
+            document.getElementById('edit-marca').value = v.marca || '';
+            document.getElementById('edit-modelo').value = v.modelo || '';
+            document.getElementById('edit-anio').value = v.anio || '';
+            document.getElementById('edit-nombre').value = v.nombre_propietario;
+            document.getElementById('edit-documento').value = v.documento_propietario;
+            document.getElementById('edit-telefono').value = v.telefono_propietario || '';
+            document.getElementById('edit-email').value = v.email_propietario || '';
+            new bootstrap.Modal(document.getElementById('modalEditar')).show();
+        }
+
+        async function guardarEdicion() {
+            const id = document.getElementById('edit-id').value;
+            const datos = {
+                tipo_vehiculo: document.getElementById('edit-tipo').value,
+                marca: document.getElementById('edit-marca').value,
+                modelo: document.getElementById('edit-modelo').value,
+                anio: document.getElementById('edit-anio').value || null,
+                nombre_propietario: document.getElementById('edit-nombre').value,
+                documento_propietario: document.getElementById('edit-documento').value,
+                telefono_propietario: document.getElementById('edit-telefono').value,
+                email_propietario: document.getElementById('edit-email').value
+            };
+            try {
+                const res = await fetch(`/api/vehiculos/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await res.json();
+                if (!resultado.error) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+                    cargarVehiculos();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        cargarVehiculos();
+    </script>
+</body>
+</html>

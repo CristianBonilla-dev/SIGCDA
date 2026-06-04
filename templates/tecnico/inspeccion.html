@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG-CDA | Inspección</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #f5f5f5; font-family: 'Segoe UI', sans-serif; display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 260px; min-height: 100vh;
+            background-color: #111111;
+            display: flex; flex-direction: column;
+            padding: 20px 16px;
+            position: fixed; top: 0; left: 0; bottom: 0;
+        }
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 32px; padding: 4px 8px;
+        }
+        .brand-icon {
+            background-color: #e53935; border-radius: 10px;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-icon i { color: white; font-size: 22px; }
+        .brand-text { color: white; font-weight: 700; font-size: 16px; }
+        .brand-role { color: #888; font-size: 12px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; border-radius: 10px;
+            color: #888; text-decoration: none; font-size: 14px;
+            font-weight: 500; transition: all 0.2s; margin-bottom: 4px;
+        }
+        .nav-item:hover { background-color: #1a1a1a; color: white; }
+        .sidebar-bottom { margin-top: auto; }
+        .btn-logout {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; border-radius: 10px;
+            color: #888; font-size: 14px; font-weight: 500;
+            background: none; border: none; cursor: pointer; width: 100%;
+        }
+        .btn-logout:hover { background-color: #1a1a1a; color: white; }
+
+        .main-content { margin-left: 260px; padding: 40px; flex: 1; }
+        .page-title { font-size: 28px; font-weight: 700; color: #111; margin-bottom: 4px; }
+        .page-subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+
+        .info-card {
+            background: white; border-radius: 16px;
+            padding: 24px; margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .info-card-title {
+            font-size: 15px; font-weight: 700; color: #111;
+            margin-bottom: 16px; padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-row { display: flex; gap: 32px; flex-wrap: wrap; }
+        .info-item label { font-size: 12px; color: #888; display: block; margin-bottom: 2px; }
+        .info-item span { font-size: 14px; font-weight: 600; color: #333; }
+
+        .item-card {
+            background: white; border-radius: 12px;
+            padding: 20px 24px; margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 2px solid transparent; transition: border 0.2s;
+        }
+        .item-card.aprobado { border-color: #28a745; }
+        .item-card.rechazado { border-color: #e53935; }
+
+        .item-nombre {
+            font-size: 15px; font-weight: 600; color: #111;
+            margin-bottom: 12px; text-transform: capitalize;
+        }
+        .item-nombre i { margin-right: 8px; color: #e53935; }
+
+        .btn-resultado {
+            padding: 8px 20px; border-radius: 8px; font-size: 13px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .btn-aprobar {
+            background: white; border-color: #28a745; color: #28a745;
+        }
+        .btn-aprobar.selected, .btn-aprobar:hover { background: #28a745; color: white; }
+        .btn-rechazar {
+            background: white; border-color: #e53935; color: #e53935;
+            margin-left: 8px;
+        }
+        .btn-rechazar.selected, .btn-rechazar:hover { background: #e53935; color: white; }
+
+        .item-obs {
+            margin-top: 12px;
+            width: 100%; padding: 8px 12px;
+            border: 1px solid #eee; border-radius: 8px;
+            font-size: 13px; color: #333; resize: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .item-obs:focus { outline: none; border-color: #e53935; }
+
+        .btn-guardar {
+            background-color: #e53935; color: white;
+            border: none; padding: 14px 32px; border-radius: 10px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: background 0.2s; width: 100%;
+        }
+        .btn-guardar:hover { background-color: #c62828; }
+        .btn-volver {
+            background: white; color: #333;
+            border: 1px solid #ddd; padding: 14px 32px;
+            border-radius: 10px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; width: 100%;
+        }
+        .btn-volver:hover { background: #f5f5f5; }
+
+        .obs-general {
+            width: 100%; padding: 12px 16px;
+            border: 1px solid #eee; border-radius: 10px;
+            font-size: 14px; resize: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .obs-general:focus { outline: none; border-color: #e53935; }
+        .alert-msg { display: none; border-radius: 10px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="bi bi-car-front-fill"></i></div>
+            <div>
+                <div class="brand-text">SIG-CDA</div>
+                <div class="brand-role">Técnico</div>
+            </div>
+        </div>
+        <a href="/tecnico/revisiones" class="nav-item">
+            <i class="bi bi-arrow-left"></i> Volver a Revisiones
+        </a>
+        <div class="sidebar-bottom">
+            <button class="btn-logout" onclick="cerrarSesion()">
+                <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main-content">
+        <div class="page-title">Realizar Inspección</div>
+        <div class="page-subtitle">Registra el resultado de cada ítem de inspección</div>
+
+        <!-- Info del vehículo -->
+        <div class="info-card" id="info-vehiculo">
+            <div class="info-card-title">📋 Información del Vehículo</div>
+            <div class="info-row" id="datos-vehiculo">
+                <div class="info-item"><label>Cargando...</label></div>
+            </div>
+        </div>
+
+        <!-- Ítems de inspección -->
+        <div class="info-card">
+            <div class="info-card-title">🔍 Ítems de Inspección</div>
+            <div class="alert alert-danger alert-msg" id="error-msg"></div>
+            <div class="alert alert-success alert-msg" id="success-msg"></div>
+            <div id="lista-items"></div>
+
+            <!-- Observaciones generales -->
+            <div class="mt-4 mb-4">
+                <label style="font-size:14px;font-weight:600;color:#333;margin-bottom:8px;display:block;">
+                    Observaciones generales
+                </label>
+                <textarea class="obs-general" id="observaciones-generales" rows="3"
+                    placeholder="Escribe observaciones generales del vehículo..."></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <button class="btn-volver" onclick="window.location.href='/tecnico/revisiones'">
+                        ← Volver
+                    </button>
+                </div>
+                <div class="col-md-8">
+                    <button class="btn-guardar" onclick="guardarInspeccion()">
+                        <i class="bi bi-check-circle me-2"></i>Guardar Inspección
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        const id_revision = localStorage.getItem('id_revision_activa');
+        if (!id_revision) window.location.href = '/tecnico/revisiones';
+
+        const ITEMS = [
+            { key: 'frenos',        label: 'Sistema de Frenos',      icon: 'bi-shield-check' },
+            { key: 'luces',         label: 'Sistema de Luces',        icon: 'bi-lightbulb' },
+            { key: 'suspension',    label: 'Sistema de Suspensión',   icon: 'bi-arrows-collapse' },
+            { key: 'neumaticos',    label: 'Estado de Neumáticos',    icon: 'bi-circle' },
+            { key: 'emision_gases', label: 'Emisión de Gases',        icon: 'bi-wind' },
+            { key: 'direccion',     label: 'Sistema de Dirección',    icon: 'bi-compass' },
+            { key: 'motor',         label: 'Estado del Motor',        icon: 'bi-gear' },
+            { key: 'carroceria',    label: 'Estado de Carrocería',    icon: 'bi-car-front' },
+        ];
+
+        let resultados = {};
+
+        async function cargarDatos() {
+            try {
+                // Cargar info de la revisión
+                const res = await fetch('/api/revisiones', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const datos = await res.json();
+                const revision = datos.revisiones.find(r => r.id_revision == id_revision);
+
+                if (revision) {
+                    const fecha = new Date(revision.fecha_revision).toLocaleDateString('es-CO');
+                    document.getElementById('datos-vehiculo').innerHTML = `
+                        <div class="info-item"><label>Placa</label><span>${revision.placa}</span></div>
+                        <div class="info-item"><label>Vehículo</label><span>${revision.marca || ''} ${revision.modelo || ''}</span></div>
+                        <div class="info-item"><label>Propietario</label><span>${revision.nombre_propietario}</span></div>
+                        <div class="info-item"><label>Fecha</label><span>${fecha}</span></div>
+                        <div class="info-item"><label>Hora</label><span>${revision.hora_revision || '--:--'}</span></div>
+                        <div class="info-item"><label>Tipo</label><span>${revision.tipo_revision}</span></div>
+                    `;
+                }
+
+                // Renderizar ítems
+                const lista = document.getElementById('lista-items');
+                lista.innerHTML = ITEMS.map(item => `
+                    <div class="item-card" id="card-${item.key}">
+                        <div class="item-nombre">
+                            <i class="bi ${item.icon}"></i>${item.label}
+                        </div>
+                        <div>
+                            <button class="btn-resultado btn-aprobar" id="btn-ap-${item.key}"
+                                onclick="seleccionar('${item.key}', 'aprobado')">
+                                ✓ Aprobado
+                            </button>
+                            <button class="btn-resultado btn-rechazar" id="btn-re-${item.key}"
+                                onclick="seleccionar('${item.key}', 'rechazado')">
+                                ✗ Rechazado
+                            </button>
+                        </div>
+                        <textarea class="item-obs" id="obs-${item.key}" rows="2"
+                            placeholder="Observación (opcional)..."></textarea>
+                    </div>
+                `).join('');
+
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function seleccionar(key, resultado) {
+            resultados[key] = resultado;
+            const card = document.getElementById(`card-${key}`);
+            const btnAp = document.getElementById(`btn-ap-${key}`);
+            const btnRe = document.getElementById(`btn-re-${key}`);
+
+            card.className = `item-card ${resultado}`;
+            btnAp.className = `btn-resultado btn-aprobar${resultado === 'aprobado' ? ' selected' : ''}`;
+            btnRe.className = `btn-resultado btn-rechazar${resultado === 'rechazado' ? ' selected' : ''}`;
+        }
+
+        async function guardarInspeccion() {
+            const errorMsg = document.getElementById('error-msg');
+            const successMsg = document.getElementById('success-msg');
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            // Verificar que todos los ítems estén marcados
+            const faltantes = ITEMS.filter(i => !resultados[i.key]);
+            if (faltantes.length > 0) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = `Faltan ${faltantes.length} ítem(s) por marcar: ${faltantes.map(i => i.label).join(', ')}`;
+                return;
+            }
+
+            const items = ITEMS.map(item => ({
+                nombre_item: item.key,
+                resultado: resultados[item.key],
+                observacion: document.getElementById(`obs-${item.key}`).value
+            }));
+
+            const observaciones = document.getElementById('observaciones-generales').value;
+
+            try {
+                const res = await fetch(`/api/revisiones/${id_revision}/resultado`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ items, observaciones })
+                });
+
+                const dato = await res.json();
+
+                if (dato.error) {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = dato.mensaje;
+                    return;
+                }
+
+                successMsg.style.display = 'block';
+                successMsg.textContent = `Inspección guardada — Resultado: ${dato.resultado.toUpperCase()}`;
+
+                setTimeout(() => {
+                    window.location.href = '/tecnico/revisiones';
+                }, 2000);
+
+            } catch(e) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Error de conexión con el servidor';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        cargarDatos();
+    </script>
+</body>
+</html>

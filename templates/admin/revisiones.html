@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG-CDA | Revisiones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #000000; font-family: 'Segoe UI', sans-serif; }
+        .sidebar {
+            background-color: #111111;
+            min-height: 100vh;
+            padding: 20px 0;
+            border-right: 1px solid #222;
+            position: fixed;
+            width: 220px;
+        }
+        .sidebar a {
+            display: block;
+            color: #aaa;
+            padding: 12px 24px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            color: white;
+            background-color: #1a1a1a;
+            border-left: 3px solid #e53935;
+        }
+        .sidebar a i { margin-right: 10px; }
+        .main-content { margin-left: 220px; padding: 30px; }
+        .page-title { color: white; font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .page-subtitle { color: #888; font-size: 14px; margin-bottom: 28px; }
+        .card {
+            background-color: #111111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .card-header {
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #222;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 16px 20px;
+            color: white;
+            font-weight: 600;
+        }
+        .card-body { padding: 24px; }
+        .form-label { color: #ccc; font-size: 13px; font-weight: 600; }
+        .form-control, .form-select {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #1a1a1a;
+            border-color: #e53935;
+            color: white;
+            box-shadow: none;
+        }
+        .form-control::placeholder { color: #555; }
+        .form-select option { background-color: #1a1a1a; }
+        .btn-registrar {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-registrar:hover { background-color: #c62828; color: white; }
+        .table { color: #ccc; }
+        .table thead th {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            font-weight: 600;
+        }
+        .table td { border-bottom: 1px solid #1a1a1a; vertical-align: middle; }
+        .badge-pendiente {
+            background-color: #332d00;
+            color: #ffc107;
+            border: 1px solid #665a00;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .badge-aprobado {
+            background-color: #003320;
+            color: #28a745;
+            border: 1px solid #006640;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .badge-rechazado {
+            background-color: #330000;
+            color: #e53935;
+            border: 1px solid #660000;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .alert { display: none; border-radius: 8px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="padding: 16px 24px; margin-bottom: 12px;">
+            <span style="color: #e53935; font-weight: 700; font-size: 18px;">🚗 SIG-CDA</span>
+        </div>
+        <a href="/admin/dashboard"><i class="bi bi-grid"></i> Dashboard</a>
+        <a href="/admin/usuarios"><i class="bi bi-people"></i> Usuarios</a>
+        <a href="/admin/vehiculos"><i class="bi bi-car-front"></i> Vehículos</a>
+        <a href="/admin/revisiones" class="active"><i class="bi bi-clipboard-check"></i> Revisiones</a>
+        <div style="position: absolute; bottom: 20px; width: 100%;">
+            <a href="#" onclick="cerrarSesion()"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="main-content">
+        <div class="page-title">Gestión de Revisiones</div>
+        <div class="page-subtitle">Programa y administra las revisiones vehiculares</div>
+
+        <!-- Formulario -->
+        <div class="card">
+            <div class="card-header">Programar nueva revisión</div>
+            <div class="card-body">
+                <div class="alert alert-danger" id="error-msg"></div>
+                <div class="alert alert-success" id="success-msg"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Vehículo *</label>
+                        <select class="form-select" id="id_vehiculo">
+                            <option value="">Selecciona un vehículo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Técnico *</label>
+                        <select class="form-select" id="id_tecnico">
+                            <option value="">Selecciona un técnico</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo de revisión *</label>
+                        <select class="form-select" id="tipo_revision">
+                            <option value="">Selecciona</option>
+                            <option value="tecnico_mecanica">Técnico Mecánica</option>
+                            <option value="gases">Gases</option>
+                            <option value="preventiva">Preventiva</option>
+                            <option value="reinspeccion">Reinspección</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha *</label>
+                        <input type="date" class="form-control" id="fecha_revision">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Hora</label>
+                        <input type="time" class="form-control" id="hora_revision">
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" rows="2" placeholder="Observaciones previas..."></textarea>
+                    </div>
+                </div>
+
+                <button class="btn-registrar" onclick="programarRevision()">
+                    <i class="bi bi-calendar-plus me-2"></i>Programar Revisión
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Revisiones registradas</span>
+                <button class="btn-registrar btn-sm" onclick="cargarRevisiones()">
+                    <i class="bi bi-arrow-clockwise"></i> Actualizar
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Placa</th>
+                            <th>Vehículo</th>
+                            <th>Propietario</th>
+                            <th>Técnico</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-revisiones">
+                        <tr><td colspan="8" class="text-center py-4" style="color:#555">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        async function cargarSelects() {
+            // Cargar vehículos
+            const resV = await fetch('/api/vehiculos', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const datosV = await resV.json();
+            const selectV = document.getElementById('id_vehiculo');
+            datosV.vehiculos.forEach(v => {
+                selectV.innerHTML += `<option value="${v.id_vehiculo}">${v.placa} — ${v.nombre_propietario}</option>`;
+            });
+
+            // Cargar técnicos
+            const resT = await fetch('/api/tecnicos', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const datosT = await resT.json();
+            const selectT = document.getElementById('id_tecnico');
+            datosT.tecnicos.forEach(t => {
+                selectT.innerHTML += `<option value="${t.id_usuario}">${t.nombre} ${t.apellido}</option>`;
+            });
+        }
+
+        async function cargarRevisiones() {
+            const tbody = document.getElementById('tabla-revisiones');
+            try {
+                const res = await fetch('/api/revisiones', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const datos = await res.json();
+                if (!datos.revisiones.length) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4" style="color:#555">No hay revisiones registradas</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = datos.revisiones.map(r => {
+                    const fecha = new Date(r.fecha_revision).toLocaleDateString('es-CO');
+                    const estado = r.resultado || r.estado;
+                    const badgeClass = estado === 'aprobado' ? 'badge-aprobado' : estado === 'rechazado' ? 'badge-rechazado' : 'badge-pendiente';
+                    return `
+                        <tr>
+                            <td class="ps-4"><strong style="color:white">${r.placa}</strong></td>
+                            <td>${r.marca || ''} ${r.modelo || ''}</td>
+                            <td>${r.nombre_propietario}</td>
+                            <td>${r.tecnico_nombre} ${r.tecnico_apellido}</td>
+                            <td>${fecha}</td>
+                            <td>${r.hora_revision || '-'}</td>
+                            <td style="color:#aaa">${r.tipo_revision}</td>
+                            <td><span class="${badgeClass}">${estado}</span></td>
+                        </tr>`;
+                }).join('');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Error al cargar</td></tr>';
+            }
+        }
+
+        async function programarRevision() {
+            const errorMsg = document.getElementById('error-msg');
+            const successMsg = document.getElementById('success-msg');
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            const datos = {
+                id_vehiculo: document.getElementById('id_vehiculo').value,
+                id_tecnico: document.getElementById('id_tecnico').value,
+                fecha_revision: document.getElementById('fecha_revision').value,
+                hora_revision: document.getElementById('hora_revision').value,
+                tipo_revision: document.getElementById('tipo_revision').value,
+                observaciones: document.getElementById('observaciones').value
+            };
+
+            if (!datos.id_vehiculo || !datos.id_tecnico || !datos.fecha_revision || !datos.tipo_revision) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Por favor completa todos los campos obligatorios';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/revisiones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await res.json();
+                if (resultado.error) {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = resultado.mensaje;
+                    return;
+                }
+                successMsg.style.display = 'block';
+                successMsg.textContent = 'Revisión programada correctamente';
+                document.querySelectorAll('.form-control, .form-select').forEach(el => el.value = '');
+                cargarRevisiones();
+            } catch (e) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Error de conexión con el servidor';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        cargarSelects();
+        cargarRevisiones();
+    </script>
+</body>
+</html>

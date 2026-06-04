@@ -16,17 +16,29 @@ def login():
 def consulta():
     return render_template('publico/consulta.html')
 
-@app.route('/admin/usuarios')
-def admin_usuarios():
-    return render_template('admin/usuarios.html')
-
 @app.route('/admin/dashboard')
 def admin_dashboard():
     return render_template('admin/dashboard.html')
 
+@app.route('/admin/usuarios')
+def admin_usuarios():
+    return render_template('admin/usuarios.html')
+
+@app.route('/admin/vehiculos')
+def admin_vehiculos():
+    return render_template('admin/vehiculos.html')
+
+@app.route('/admin/revisiones')
+def admin_revisiones():
+    return render_template('admin/revisiones.html')
+
 @app.route('/tecnico/revisiones')
 def tecnico_revisiones():
     return render_template('tecnico/revisiones.html')
+
+@app.route('/tecnico/inspeccion')
+def tecnico_inspeccion():
+    return render_template('tecnico/inspeccion.html')
 
 # ── Rutas API ───────────────────────────────────────
 from controllers.auth_controller import auth_bp
